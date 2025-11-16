@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rails Admin Panel</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  
+  <%= stylesheet_link_tag "admin", media: "all", data: { turbo_track: "reload" } %>
+
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <%= vite_client_tag %>
+</head>
+<body>
+
+  <div id="react-admin-container">
+    <%= yield %>
+  </div>
+  
+</body>
+</html>

@@ -1,0 +1,21 @@
+<h1><%= t ".title" %></h1>
+
+<% if user_signed_in? %>
+  <%= link_to "New product", new_product_path %>
+<% end %>
+
+<div id="products">
+  <% @products.each do |product| %>
+    <div>
+      <%= link_to product.name, product_path(product.id) %>
+      <div style="display: inline-block; font-size:small;">
+        <%=product.description%>
+      </div>
+      <div style="display: inline-block; font-size:small;">
+        <%=product.created_at%>;
+        <%= l product.created_at, format: :short%>;
+        <%= time_tag product.created_at, product.created_at.strftime("%d.%m.%Y %H:%M") %>
+      </div>
+    </div>
+  <% end %>
+</div>
