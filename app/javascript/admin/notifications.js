@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useAuthState, useNotify } from 'react-admin';
 import { createConsumer } from "@rails/actioncable"
 
-export const NotificationProvider = () => {
+export const NotificationProvider = (props) => {
+  const cableUrl = props.cableUrl || "/cable"
   const { isPending, authenticated } = useAuthState();
   const notify = useNotify();
   const cableRef = useRef(null);
@@ -19,7 +20,7 @@ export const NotificationProvider = () => {
 
       let token = localStorage.getItem("ra_authorization");
       token = token.split(" ")[1]
-      let cable = createConsumer(`/cable?token=${token}`);
+      let cable = createConsumer(`${cableUrl}?token=${token}`);
       cableRef.current = cable
 
       subscriptionRef.current = cable.subscriptions.create(

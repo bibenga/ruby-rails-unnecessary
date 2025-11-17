@@ -79,3 +79,4 @@ yarn-debug.log*
 /.devcontainer
 /.vscode
 *.txt
+credentials.yml.enc

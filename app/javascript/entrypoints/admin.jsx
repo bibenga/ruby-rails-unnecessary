@@ -7,6 +7,7 @@ import { getAuthProvider } from '../admin/authProvider';
 import { NotificationProvider } from "../admin/notifications";
 
 const apiUrl = document.getElementById("admin-root").dataset.apiUrl;
+const cableUrl = document.getElementById("admin-root").dataset.cableUrl;
 
 const authProvider = getAuthProvider(apiUrl)
 
@@ -27,7 +28,7 @@ const dataProvider = jsonServerProvider(apiUrl, httpClient);
 const AdminLayout = (props) => (
   <>
     <Layout {...props} />
-    <NotificationProvider />
+    <NotificationProvider cableUrl={cableUrl} />
   </>
 );
 
