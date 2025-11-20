@@ -1,10 +1,15 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { fetchUtils, Admin, Resource, ShowGuesser, EditGuesser, Authenticated, Layout } from "react-admin";
+import {
+  fetchUtils, Admin, Resource, ShowGuesser, EditGuesser, Authenticated, Layout,
+  bwLightTheme, bwDarkTheme
+} from "react-admin";
 import jsonServerProvider from "ra-data-json-server";
 import { UserList, UserShow, UserEdit, UserCreate } from "../admin/users";
 import { getAuthProvider } from '../admin/authProvider';
 import { NotificationProvider } from "../admin/notifications";
+import { deepmerge } from '@mui/utils';
+import UserIcon from '@mui/icons-material/People';
 
 const apiUrl = document.getElementById("admin-root").dataset.apiUrl;
 const cableUrl = document.getElementById("admin-root").dataset.cableUrl;
@@ -28,14 +33,32 @@ const dataProvider = jsonServerProvider(apiUrl, httpClient);
 const AdminLayout = (props) => (
   <>
     <Layout {...props} />
-    {/* <NotificationProvider cableUrl={cableUrl} /> */}
+    <NotificationProvider cableUrl={cableUrl} />
   </>
 );
 
+const lightTheme = deepmerge(bwLightTheme, {
+    typography: {
+        fontFamily: ['monospace'].join(','),
+    },
+});
+
+const darkTheme = deepmerge(bwDarkTheme, {
+    typography: {
+        fontFamily: ['monospace'].join(','),
+    },
+});
+
 const AdminApp = () => (
   <>
-    <Admin authProvider={authProvider} dataProvider={dataProvider} layout={AdminLayout}>
-      <Resource name="users" list={UserList} show={UserShow} edit={UserEdit} create={UserCreate}/>
+    <Admin
+      authProvider={authProvider}
+      dataProvider={dataProvider}
+      layout={AdminLayout}
+      theme={lightTheme}
+      darkTheme={darkTheme}
+    >
+      <Resource name="users" icon={UserIcon} list={UserList} show={UserShow} edit={UserEdit} create={UserCreate} />
     </Admin>
   </>
 );

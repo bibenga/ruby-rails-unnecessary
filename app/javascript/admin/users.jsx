@@ -26,8 +26,8 @@ export const UserList = () => (
       <DataTable.Col source="active" field={BooleanField} disableSort />
       <DataTable.Col source="last_sign_in_at" field={DateField} disableSort />
       <DataTable.Col align="right">
-        <ShowButton />
-        <EditButton />
+        <ShowButton sx={{ mr: 1 }}/>
+        <EditButton sx={{ mr: 1 }}/>
         <DeleteWithConfirmButton mutationMode="pessimistic" />
       </DataTable.Col>
     </DataTable>
