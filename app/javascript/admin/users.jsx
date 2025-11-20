@@ -1,9 +1,9 @@
 import React from "react";
 import {
   List, Show, SimpleShowLayout, DataTable, TextField, EmailField, DateField,
-  ShowButton, EditButton, DeleteButton, DeleteWithConfirmButton, BulkDeleteWithConfirmButton,
+  ShowButton, EditButton, DeleteWithConfirmButton, BulkDeleteWithConfirmButton,
   BooleanField, Edit, TextInput, BooleanInput, SimpleForm, Create, NullableBooleanInput,
-  required, email
+  required, email, useRecordContext
 } from "react-admin";
 
 const UserBulkActionButtons = () => (
@@ -34,8 +34,14 @@ export const UserList = () => (
   </List>
 );
 
+const UserTitle = () => {
+  const record = useRecordContext();
+  if (!record) return null;
+  return <span>User "{record.nikname || record.email}"</span>;
+};
+
 export const UserShow = (props) => (
-  <Show {...props}>
+  <Show {...props} title={<UserTitle />}>
     <SimpleShowLayout>
       <TextField source="id" />
       <EmailField source="email" />
@@ -49,15 +55,11 @@ export const UserShow = (props) => (
 
 const userEditTransformer = (data) => {
   const { id, nikname, active } = data;
-  return {
-    id,
-    nikname,
-    active,
-  };
+  return { id, nikname, active };
 };
 
 export const UserEdit = (props) => (
-  <Edit {...props} transform={userEditTransformer} mutationMode="pessimistic">
+  <Edit {...props} title={<UserTitle />} transform={userEditTransformer} mutationMode="pessimistic">
     <SimpleForm>
       <TextInput source="id" disabled />
       <TextInput source="email" disabled />
@@ -69,11 +71,7 @@ export const UserEdit = (props) => (
 
 const createEditTransformer = (data) => {
   const { email, nikname, active } = data;
-  return {
-    email,
-    nikname,
-    active,
-  };
+  return { email, nikname, active };
 };
 
 export const UserCreate = (props) => (
