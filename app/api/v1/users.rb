@@ -15,8 +15,8 @@ module V1
       params do
         optional :_start, type: Integer, values: 0.., default: 0
         optional :_end, type: Integer, values: 1.., default: 10
-        optional :_sort, type: String, values: ['id', 'nikname'], default: 'id'
-        optional :_order, type: String, values: ['ASC', 'DESC'], default: 'ASC'
+        optional :_sort, type: String, values: [ "id", "nikname" ], default: "id"
+        optional :_order, type: String, values: [ "ASC", "DESC" ], default: "ASC"
       end
       get do
         authenticate_user!
@@ -29,7 +29,7 @@ module V1
         if params[:_sort].present? && params[:_order].present?
           users = users.order(params[:_sort] => params[:_order].to_sym)
         end
-        header 'X-Total-Count', total_count
+        header "X-Total-Count", total_count
         present users, with: Entities::User
       end
 
@@ -44,7 +44,7 @@ module V1
         end
         get do
           authenticate_user!
-          
+
           user = User.find(params[:id])
           present user, with: Entities::UserDetail
         end

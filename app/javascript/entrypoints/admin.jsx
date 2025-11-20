@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { fetchUtils, Admin, Resource, ShowGuesser, EditGuesser, Authenticated, Layout } from "react-admin";
 import jsonServerProvider from "ra-data-json-server";
-import { UserList, UserShow } from "../admin/users";
+import { UserList, UserShow, UserEdit } from "../admin/users";
 import { getAuthProvider } from '../admin/authProvider';
 import { NotificationProvider } from "../admin/notifications";
 
@@ -35,7 +35,7 @@ const AdminLayout = (props) => (
 const AdminApp = () => (
   <>
     <Admin authProvider={authProvider} dataProvider={dataProvider} layout={AdminLayout}>
-      <Resource name="users" list={UserList} show={UserShow} edit={EditGuesser} />
+      <Resource name="users" list={UserList} show={UserShow} edit={UserEdit} />
     </Admin>
   </>
 );
