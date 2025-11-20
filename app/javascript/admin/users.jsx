@@ -11,10 +11,10 @@ export const UserList = () => (
       <DataTable.Col source="nikname" />
       <DataTable.Col source="active" field={BooleanField} disableSort />
       <DataTable.Col source="last_sign_in_at" field={DateField} disableSort />
-      {/* <DataTable.Col>
+      <DataTable.Col>
         <ShowButton />
         <EditButton />
-      </DataTable.Col> */}
+      </DataTable.Col>
     </DataTable>
   </List>
 );
@@ -32,12 +32,12 @@ export const UserShow = (props) => (
   </Show>
 );
 
-export const UserEdit= (props) => (
-   <Edit {...props}>
-        <SimpleForm>
-            <TextInput source="id" disabled />
-            <TextInput source="nikname" />
-            <BooleanInput source="active" />
-        </SimpleForm>
-    </Edit>
+export const UserEdit = (props) => (
+  <Edit {...props} mutationMode="pessimistic">
+    <SimpleForm>
+      <TextInput source="id" disabled />
+      <TextInput source="nikname" />
+      <BooleanInput source="active" />
+    </SimpleForm>
+  </Edit>
 );

@@ -21,7 +21,7 @@ module V1
         optional :_order, type: String, values: [ "ASC", "DESC" ], default: "ASC"
       end
       get do
-        # authenticate_user!
+        authenticate_user!
 
         # pp params
 
@@ -75,10 +75,12 @@ module V1
         put do
           authenticate_user!
 
+          # pp params
+
           user = User.find(params[:id])
 
-          user.nikname = params[:nikname] if params[:nikname]
-          user.active = params[:active] if params[:active]
+          user.nikname = params[:nikname] if params[:nikname].present?
+          user.active = params[:active] if !params[:active].nil?
 
           if user.save
             present user, with: Entities::User
