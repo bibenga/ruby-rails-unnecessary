@@ -32,8 +32,16 @@ export const UserShow = (props) => (
   </Show>
 );
 
+const userEditTransformer = (data) => {
+  const { id, nikname, active } = data;
+  return {
+    id,
+    nikname,
+    active,
+  };
+};
 export const UserEdit = (props) => (
-  <Edit {...props} mutationMode="pessimistic">
+  <Edit {...props} transform={userEditTransformer} mutationMode="pessimistic">
     <SimpleForm>
       <TextInput source="id" disabled />
       <TextInput source="nikname" />
