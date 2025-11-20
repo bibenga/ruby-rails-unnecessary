@@ -14,19 +14,21 @@ module V1
         failure [ [ 422, "ValidationError", "V1::Entities::Error" ] ]
       end
       params do
+        optional :name, type: String
         optional :page, type: Integer, values: 1.., desc: "Page number", default: 1
         optional :per_page, type: Integer, values: 2..50, desc: "Items per page", default: 5
       end
       get do
         per_page = params[:per_page] || 10
-        products = Product.order(name: :asc).page(params[:page]).per(per_page).all
 
-        # present products, with: Entities::ProductSummary
-        # present products, with: Entities::ProductSummary, meta: {
-        #   current_page: products.current_page,
-        #   total_pages:  products.total_pages,
-        #   total_count:  products.total_count
-        # }
+        products = Product
+        if params[:name].present?
+          # sqlite does not support ilike
+          # products = products.where("name ilike ?", "%#{params[:name]}%")
+          # products = products.where("lower(name) like ?", "%#{params[:name].downcase}%")
+          products = products.where(Product.arel_table[:name].matches("%#{params[:name]}%"), nil, true)
+        end
+        products = products.order(name: :asc).page(params[:page]).per(per_page).all
 
         {
           data: Entities::ProductSummary.represent(products),
@@ -69,7 +71,7 @@ module V1
           failure [ [ 404, "ResourceNotFound", "V1::Entities::Error" ] ]
         end
         # params do
-        #   requires :id, type: Integer, desc: "Product ID"
+        #   requires :id, type: "Integer", desc: "Product ID"
         # end
         get do
           product = Product.includes(:rich_text_description, comments: :user).find(params[:id])
