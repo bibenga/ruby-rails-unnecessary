@@ -1,8 +1,13 @@
 module V1
   module Entities
     class Error < Grape::Entity
-      expose :error, documentation: { type: "String" }
       expose :message, documentation: { type: "String" }
+      expose :error, documentation: { type: "String" }
+    end
+
+    class Error2 < Grape::Entity
+      expose :message, documentation: { type: "String" }
+      expose :errors, documentation: { type: "Hash" }
     end
 
     class Pagination < Grape::Entity
