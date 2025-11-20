@@ -1,13 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { useAuthState, useNotify } from 'react-admin';
-import { createConsumer } from "@rails/actioncable"
+import { createConsumer, logger } from "@rails/actioncable"
+
+logger.enabled = true
 
 export const NotificationProvider = (props) => {
   const cableUrl = props.cableUrl || "/cable"
   const { isPending, authenticated } = useAuthState();
   const notify = useNotify();
   const cableRef = useRef(null);
-  const subscriptionRef = useRef(null);
+  const notificationChannelRef = useRef(null);
 
   useEffect(() => {
     if (isPending) {
@@ -23,7 +25,7 @@ export const NotificationProvider = (props) => {
       let cable = createConsumer(`${cableUrl}?token=${token}`);
       cableRef.current = cable
 
-      subscriptionRef.current = cable.subscriptions.create(
+      notificationChannelRef.current = cable.subscriptions.create(
         'NotificationChannel',
         {
           connected() {
@@ -46,19 +48,21 @@ export const NotificationProvider = (props) => {
       );
     } else {
       console.log("NotificationChannel: is not authenticated, unsubscribe")
-      if (subscriptionRef.current) {
+      if (notificationChannelRef.current) {
         console.log('NotificationChannel: unsubscribe');
-        subscriptionRef.current.unsubscribe();
-        subscriptionRef.current = null;
+        notificationChannelRef.current.unsubscribe();
+        notificationChannelRef.current = null;
+        cableRef.current.disconnect();
         cableRef.current == null;
       }
     }
 
     return () => {
-      if (subscriptionRef.current) {
+      if (notificationChannelRef.current) {
         console.log("NotificationChannel: unsubscribe")
-        subscriptionRef.current.unsubscribe();
-        subscriptionRef.current = null;
+        notificationChannelRef.current.unsubscribe();
+        notificationChannelRef.current = null;
+        cableRef.current.disconnect();
         cableRef.current == null;
       }
     };
