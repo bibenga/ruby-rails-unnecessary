@@ -1,19 +1,25 @@
 import React from "react";
 import {
-  List, Show, SimpleShowLayout, DataTable, TextField, EmailField, DateField, 
+  List, Show, SimpleShowLayout, DataTable, TextField, EmailField, DateField,
   ShowButton, EditButton, DeleteButton, DeleteWithConfirmButton, BulkDeleteWithConfirmButton,
-  BooleanField, Edit, TextInput, BooleanInput, SimpleForm, Create,
+  BooleanField, Edit, TextInput, BooleanInput, SimpleForm, Create, NullableBooleanInput,
   required, email
 } from "react-admin";
 
 const UserBulkActionButtons = () => (
-    <>
-        <BulkDeleteWithConfirmButton mutationMode="pessimistic"/>
-    </>
+  <>
+    <BulkDeleteWithConfirmButton mutationMode="pessimistic" />
+  </>
 );
 
+const userFilters = [
+  <TextInput source="nikname" />,
+  <NullableBooleanInput source="active" />,
+];
+
+
 export const UserList = () => (
-  <List>
+  <List filters={userFilters}>
     <DataTable bulkActionButtons={<UserBulkActionButtons />}>
       <DataTable.Col source="id" />
       <DataTable.Col source="nikname" />
