@@ -35,6 +35,7 @@ export const UserShow = (props) => (
 export const UserEdit= (props) => (
    <Edit {...props}>
         <SimpleForm>
+            <TextInput source="id" disabled />
             <TextInput source="nikname" />
             <BooleanInput source="active" />
         </SimpleForm>
