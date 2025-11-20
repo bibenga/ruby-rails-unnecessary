@@ -10,7 +10,7 @@ class User < ApplicationRecord
          :jwt_authenticatable, jwt_revocation_strategy: Devise::JWT::RevocationStrategies::Null
 
   has_many :comments, dependent: :destroy
-  has_many :sessions, dependent: :destroy
+  # has_many :sessions, dependent: :destroy
 
   normalizes :email, with: ->(e) { e.strip.downcase }
   validates :nikname, allow_nil: true, uniqueness: { case_sensitive: false }
@@ -23,7 +23,7 @@ class User < ApplicationRecord
   end
 
   def update_tracked_fields(request)
-    if request.headers['Authorization']&.start_with?('Bearer ')
+    if request.headers["Authorization"]&.start_with?("Bearer ")
       return
     end
     super

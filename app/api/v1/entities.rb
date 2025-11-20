@@ -34,6 +34,10 @@ module V1
       expose :created_at, documentation: { type: "String", desc: "Created at" }
     end
 
+    class DeletedUser < Grape::Entity
+      expose :id, documentation: { type: "Integer", desc: "User Id" }
+    end
+
     class ProductSummary < Grape::Entity
       expose :id, documentation: { type: "Integer", desc: "ProductId" }
       expose :name, documentation: { type: "String", desc: "Name" }

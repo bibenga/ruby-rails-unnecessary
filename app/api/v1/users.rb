@@ -43,6 +43,32 @@ module V1
         present users, with: Entities::User
       end
 
+
+      desc "Create a user" do
+        entity Entities::UserDetail
+        failure [
+          [ 401, "Unauthorized", "V1::Entities::Error" ],
+          [ 403, "PermissionDenied", "V1::Entities::Error" ],
+          [ 422, "ValidationError", "V1::Entities::Error" ]
+        ]
+      end
+      params do
+        optional :nikname, type: String, allow_blank: false
+        optional :email, type: String, allow_blank: false
+        optional :active, type: Boolean
+      end
+      post do
+        authenticate_user!
+
+        user = User.new(declared(params))
+        user.password = Devise.friendly_token
+        if user.save
+          present user, with: Entities::UserDetail, status: 201
+        else
+          error!({ error: user.errors.full_messages }, 422)
+        end
+      end
+
       route_param :id do
         desc "Return a user."
         params do
@@ -87,6 +113,26 @@ module V1
           else
             error!({ error: user.errors.full_messages }, 422)
           end
+        end
+
+        desc "Delete a user" do
+          entity Entities::DeletedUser
+          failure [
+            [ 401, "Unauthorized", "V1::Entities::Error" ],
+            [ 403, "PermissionDenied", "V1::Entities::Error" ],
+            [ 404, "ResourceNotFound", "V1::Entities::Error" ]
+          ]
+        end
+        delete do
+          authenticate_user!
+
+          user = User.find(params[:id])
+          # error!({ error: "product not found" }, 404) unless product
+
+          user.destroy
+
+          status 200
+          present user, with: Entities::DeletedUser
         end
       end
     end
