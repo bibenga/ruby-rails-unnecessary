@@ -1,6 +1,6 @@
 require "test_helper"
 
-class Job1JobTest < ActiveJob::TestCase
+class ProductWasViewedJobTest < ActiveJob::TestCase
   # test "the truth" do
   #   assert true
   # end

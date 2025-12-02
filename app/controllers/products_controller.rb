@@ -8,8 +8,9 @@ class ProductsController < ApplicationController
   end
 
   def show
-    # @product = Product.find(params[:id])
-    Job1Job.perform_later @product.id
+    ActiveRecord.after_all_transactions_commit do
+      ProductWasViewedJob.perform_later @product, current_user
+    end
   end
 
   def new
