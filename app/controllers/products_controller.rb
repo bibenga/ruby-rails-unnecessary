@@ -4,7 +4,8 @@ class ProductsController < ApplicationController
 
   def index
     logger.info "current_user = #{current_user}"
-    @products = Product.includes(:rich_text_description).all
+    # @products = Product.includes(:rich_text_description, :counter).all
+    @products = Product.includes(:counter).all
   end
 
   def show

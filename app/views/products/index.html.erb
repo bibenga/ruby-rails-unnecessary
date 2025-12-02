@@ -9,12 +9,10 @@
     <div>
       <%= link_to product.name, product_path(product.id) %>
       <div style="display: inline-block; font-size:small;">
-        <%=product.description%>
+        <%= (product.counter&.anonymous_views_count.to_i + product.counter&.user_views_count.to_i) %>
       </div>
       <div style="display: inline-block; font-size:small;">
-        <%=product.created_at%>;
-        <%= l product.created_at, format: :short%>;
-        <%= time_tag product.created_at, product.created_at.strftime("%d.%m.%Y %H:%M") %>
+        <%= l product.updated_at, format: :short%>
       </div>
     </div>
   <% end %>
