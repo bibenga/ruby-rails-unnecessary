@@ -3,7 +3,7 @@ require "pg"
 
 class ActiveStorage::Service::LobService < ActiveStorage::Service
   # CHUNK_SIZE = 65536
-  CHUNK_SIZE = 256
+  CHUNK_SIZE = 2048
 
   MODE_WRITE = 0x20000
   MODE_READ = 0x40000
@@ -45,8 +45,6 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
 
       fd = conn.lo_open(loid, PG::Constants::INV_READ)
       raise StandardError if fd < 0
-
-      # lo = ::PG::LargeObject.new(conn, fd)
 
       if block_given?
         loop do
