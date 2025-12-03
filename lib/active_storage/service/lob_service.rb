@@ -12,13 +12,14 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   SEEK_END = 2
 
   def upload(key, io, checksum: nil, **options)
+    puts "OLALA"
     ActiveRecord::Base.transaction do
       row  = ActiveRecord::Base.connection.select_one("select lo_create(0) as loid")
       loid = row["loid"].to_i
 
       row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_WRITE ])
       fd = row["fd"].to_i
-      raise StandardError if fd == 0
+      raise StandardError if fd < 0
 
       io.rewind
       while (chunk = io.read(CHUNK_SIZE))
@@ -35,35 +36,36 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
 
   def download(key)
     puts "OLALA: #{block_given?}"
-
-    blob = ActiveStorage::Blob.find_by!(key: key)
-    loid = blob.metadata["loid"].to_i
-    pp loid
-    row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_READ ])
-    pp row
-    fd = row["fd"].to_i
-    raise StandardError if fd == 0
-    begin
+    ActiveRecord::Base.transaction do
+      blob = ActiveStorage::Blob.find_by!(key: key)
+      loid = blob.metadata["loid"].to_i
+      row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_READ ])
+      fd = row["fd"].to_i
+      raise StandardError if fd < 0
       if block_given?
         loop do
           row = ActiveRecord::Base.connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
           chunk = row["c"]
-          break if chunk.empry?
+          break if chunk.empty?
           yield chunk
         end
+        ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
       else
         buf = ""
+        i = 0
         loop do
           row = ActiveRecord::Base.connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
           chunk = row["c"]
-          break if chunk.empry?
+          pp chunk
+          break if chunk.empty?
           buf += chunk
+          i += 1
+          raise StandardError if i >= 10
         end
-        pp buf
+        ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
+        puts "buf: #{buf.length}; #{buf}"
         buf
       end
-    ensure
-      ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
     end
   end
 
