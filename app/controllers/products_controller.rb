@@ -33,10 +33,12 @@ class ProductsController < ApplicationController
 
   def update
     # @product = Product.find(params[:id])
-    if @product.update(product_params)
-      redirect_to @product
-    else
-      render :edit, status: :unprocessable_entity
+    Product.transaction do
+      if @product.update(product_params)
+        redirect_to @product
+      else
+        render :edit, status: :unprocessable_entity
+      end
     end
   end
 
@@ -52,6 +54,6 @@ class ProductsController < ApplicationController
   end
 
   def product_params
-    params.expect(product: [ :name, :description, :inventory_count ])
+    params.expect(product: [ :name, :description, :inventory_count, :contract ])
   end
 end

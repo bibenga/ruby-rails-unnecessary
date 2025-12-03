@@ -2,6 +2,7 @@ class Product < ApplicationRecord
   include Notifications
 
   has_rich_text :description
+  has_one_attached :contract, service: :lob
 
   has_one :counter, class_name: "ProductCounter", dependent: :destroy
 

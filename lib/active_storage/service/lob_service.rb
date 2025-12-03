@@ -12,30 +12,33 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   SEEK_END = 2
 
   def upload(key, io, checksum: nil, **options)
+    loid = nil
     ActiveRecord::Base.transaction do
       row  = ActiveRecord::Base.connection.select_one("select lo_create(0) as loid")
-      loid = row["loid"]
+      loid = row["loid"].to_i
 
-      ActiveRecord::Base.connection.exec_query("select lo_open($1, $2)", "SQL", [ loid, MODE_WRITE ])
+      row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_WRITE ])
+      fd = row["fd"].to_i
 
       io.rewind
       while (chunk = io.read(CHUNK_SIZE))
-        ActiveRecord::Base.connection.exec_query("select lowrite($1, $2)", "SQL", [ loid, chunk ])
+        chunk = ActiveRecord::Base.connection.escape_bytea(chunk)
+        ActiveRecord::Base.connection.exec_query("select lowrite($1, $2)", "SQL", [ fd, chunk ])
       end
 
-      ActiveRecord::Base.connection.exec_query("select lo_close($1, $2)", "SQL", [ loid ])
-
-      loid
+      ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
     end
+    loid
   end
 
   def download(key)
     loid = key.to_i
-    ActiveRecord::Base.connection.exec_query("select lo_open($1, $2)", "SQL", [ loid, MODE_READ ])
+    row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2)", "SQL", [ loid, MODE_READ ])
+    fd = row["fd"].to_i
     begin
       if block_given?
         loop do
-          row = ActiveRecord::Base.connection.select_one("select loread(%s, %s) as c", "SQL", [ loid, CHUNK_SIZE ])
+          row = ActiveRecord::Base.connection.select_one("select loread(%s, %s) as c", "SQL", [ fd, CHUNK_SIZE ])
           chunk = row["c"]
           break if chunk.empry?
           yield chunk
@@ -43,7 +46,7 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
       else
         buf = ""
         loop do
-          row = ActiveRecord::Base.connection.select_one("select loread(%s, %s) as c", "SQL", [ loid, CHUNK_SIZE ])
+          row = ActiveRecord::Base.connection.select_one("select loread(%s, %s) as c", "SQL", [ fd, CHUNK_SIZE ])
           chunk = row["c"]
           buf += chunk
           break if chunk.empry?
@@ -51,7 +54,7 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
         buf
       end
     ensure
-      ActiveRecord::Base.connection.exec_query("select lo_close($1, $2)", "SQL", [ loid ])
+      ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
     end
   end
 
