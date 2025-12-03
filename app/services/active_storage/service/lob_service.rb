@@ -1,3 +1,5 @@
+require "active_storage/service"
+
 class ActiveStorage::Service::LobService < ActiveStorage::Service
   CHUNK_SIZE = 65536
 
