@@ -19,6 +19,10 @@ Rails.application.routes.draw do
 
   resources :products do
     resources :subscribers, only: [ :create ]
+
+    member do
+      get :download_contract
+    end
   end
   resource :unsubscribe, only: [ :show ]
 

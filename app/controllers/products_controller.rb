@@ -1,6 +1,6 @@
 class ProductsController < ApplicationController
   before_action :authenticate_user!, except: [ :index, :show ]
-  before_action :set_product, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_product, only: [ :show, :edit, :update, :destroy, :download_contract ]
 
   def index
     logger.info "current_user = #{current_user}"
@@ -45,6 +45,20 @@ class ProductsController < ApplicationController
   def destroy
     @product.destroy
     redirect_to products_path
+  end
+
+  def download_contract
+    unless @product.contract.attached?
+      head :not_found and return
+    end
+    contract_blob = @product.contract.blob
+    data = contract_blob.download
+    send_data data,
+              filename: contract_blob.filename.to_s,
+              type: contract_blob.content_type,
+              disposition: "attachment"
+  rescue ActiveRecord::RecordNotFound
+    head :not_found
   end
 
   private

@@ -18,6 +18,7 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
 
       row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_WRITE ])
       fd = row["fd"].to_i
+      raise StandardError if fd == 0
 
       io.rewind
       while (chunk = io.read(CHUNK_SIZE))
@@ -33,14 +34,19 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   end
 
   def download(key)
+    puts "OLALA: #{block_given?}"
+
     blob = ActiveStorage::Blob.find_by!(key: key)
     loid = blob.metadata["loid"].to_i
-    row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2)", "SQL", [ loid, MODE_READ ])
+    pp loid
+    row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_READ ])
+    pp row
     fd = row["fd"].to_i
+    raise StandardError if fd == 0
     begin
       if block_given?
         loop do
-          row = ActiveRecord::Base.connection.select_one("select loread(%s, %s) as c", "SQL", [ fd, CHUNK_SIZE ])
+          row = ActiveRecord::Base.connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
           chunk = row["c"]
           break if chunk.empry?
           yield chunk
@@ -48,11 +54,12 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
       else
         buf = ""
         loop do
-          row = ActiveRecord::Base.connection.select_one("select loread(%s, %s) as c", "SQL", [ fd, CHUNK_SIZE ])
+          row = ActiveRecord::Base.connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
           chunk = row["c"]
-          buf += chunk
           break if chunk.empry?
+          buf += chunk
         end
+        pp buf
         buf
       end
     ensure
