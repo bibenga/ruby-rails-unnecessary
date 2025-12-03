@@ -28,11 +28,9 @@ class ProductsController < ApplicationController
   end
 
   def edit
-    # @product = Product.find(params[:id])
   end
 
   def update
-    # @product = Product.find(params[:id])
     Product.transaction do
       if @product.update(product_params)
         redirect_to @product
