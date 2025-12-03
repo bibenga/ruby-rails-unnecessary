@@ -57,12 +57,10 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
         buf = "".b
         loop do
           chunk = conn.loread(fd, CHUNK_SIZE)
-          # pp chunk
           break if chunk.nil?
           buf += chunk.b
         end
         conn.lo_close(fd)
-        puts "buf: #{buf.length}"
         buf
       end
     end
