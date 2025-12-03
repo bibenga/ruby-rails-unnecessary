@@ -1,4 +1,5 @@
 require "active_storage/service"
+require "pg"
 
 class ActiveStorage::Service::LobService < ActiveStorage::Service
   # CHUNK_SIZE = 65536
@@ -15,20 +16,19 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   def upload(key, io, checksum: nil, **options)
     puts "OLALA"
     ActiveRecord::Base.transaction do
-      row  = ActiveRecord::Base.connection.select_one("select lo_create(0) as loid")
-      loid = row["loid"].to_i
+      conn = ActiveRecord::Base.connection.raw_connection
 
-      row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_WRITE ])
-      fd = row["fd"].to_i
+      loid = conn.lo_creat(0)
+
+      fd = conn.lo_open(loid, PG::Constants::INV_WRITE)
       raise StandardError if fd < 0
 
       io.rewind
       while (chunk = io.read(CHUNK_SIZE))
-        chunk = ActiveRecord::Base.connection.escape_bytea(chunk)
-        ActiveRecord::Base.connection.exec_query("select lowrite($1, $2)", "SQL", [ fd, chunk ])
+        conn.lowrite(fd, chunk)
       end
 
-      ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
+      conn.lo_close(fd)
 
       blob = ActiveStorage::Blob.find_by!(key: key)
       blob.update_column(:metadata, blob.metadata.merge("loid" => loid))
@@ -37,35 +37,34 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
 
   def download(key)
     puts "OLALA: #{block_given?}"
-    connection = ActiveRecord::Base.connection
     ActiveRecord::Base.transaction do
       blob = ActiveStorage::Blob.find_by!(key: key)
       loid = blob.metadata["loid"].to_i
-      row = connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_READ ])
-      fd = row["fd"].to_i
+
+      conn = ActiveRecord::Base.connection.raw_connection
+
+      fd = conn.lo_open(loid, PG::Constants::INV_READ)
       raise StandardError if fd < 0
+
+      # lo = ::PG::LargeObject.new(conn, fd)
+
       if block_given?
         loop do
-          row = connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
-          chunk = row["c"]
+          chunk = conn.loread(fd, CHUNK_SIZE)
           break if chunk.empty?
           yield chunk
         end
-        connection.exec_query("select lo_close($1)", "SQL", [ fd ])
+        conn.lo_close(fd)
       else
-        buf = ""
-        i = 0
+        buf = "".b
         loop do
-          row = connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
-          chunk = row["c"]
-          pp chunk
-          break if chunk.empty?
-          buf += chunk
-          i += 1
-          raise StandardError if i >= 10
+          chunk = conn.loread(fd, CHUNK_SIZE)
+          # pp chunk
+          break if chunk.nil?
+          buf += chunk.b
         end
-        connection.exec_query("select lo_close($1)", "SQL", [ fd ])
-        puts "buf: #{buf.length}; #{buf}"
+        conn.lo_close(fd)
+        puts "buf: #{buf.length}"
         buf
       end
     end
