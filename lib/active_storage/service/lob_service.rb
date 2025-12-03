@@ -1,7 +1,8 @@
 require "active_storage/service"
 
 class ActiveStorage::Service::LobService < ActiveStorage::Service
-  CHUNK_SIZE = 65536
+  # CHUNK_SIZE = 65536
+  CHUNK_SIZE = 256
 
   MODE_WRITE = 0x20000
   MODE_READ = 0x40000
@@ -36,25 +37,26 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
 
   def download(key)
     puts "OLALA: #{block_given?}"
+    connection = ActiveRecord::Base.connection
     ActiveRecord::Base.transaction do
       blob = ActiveStorage::Blob.find_by!(key: key)
       loid = blob.metadata["loid"].to_i
-      row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_READ ])
+      row = connection.select_one("select lo_open($1, $2) as fd", "SQL", [ loid, MODE_READ ])
       fd = row["fd"].to_i
       raise StandardError if fd < 0
       if block_given?
         loop do
-          row = ActiveRecord::Base.connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
+          row = connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
           chunk = row["c"]
           break if chunk.empty?
           yield chunk
         end
-        ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
+        connection.exec_query("select lo_close($1)", "SQL", [ fd ])
       else
         buf = ""
         i = 0
         loop do
-          row = ActiveRecord::Base.connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
+          row = connection.select_one("select loread($1, $2) as c", "SQL", [ fd, CHUNK_SIZE ])
           chunk = row["c"]
           pp chunk
           break if chunk.empty?
@@ -62,7 +64,7 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
           i += 1
           raise StandardError if i >= 10
         end
-        ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
+        connection.exec_query("select lo_close($1)", "SQL", [ fd ])
         puts "buf: #{buf.length}; #{buf}"
         buf
       end
