@@ -19,8 +19,9 @@
   </div>
 
   <div>
+    <%= form.hidden_field :contract, value: @product.contract.signed_id if @product.contract.attached? %>
     <%= form.label :contract, style: "display: block" %>
-    <%= form.file_field :contract %>
+    <%= form.file_field :contract, direct_upload: true %>
     <% if @product.contract.attached? %>
       <div>
         Current contract: <%= @product.contract.filename %>

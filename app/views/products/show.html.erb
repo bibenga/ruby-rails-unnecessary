@@ -14,8 +14,9 @@
     <% if @product.contract.attached? %>
       <div style="padding-top: 5px">
         Current contract: <%= @product.contract.filename %> 
-        (<%= link_to "download", rails_blob_path(@product.contract, disposition: "attachment") %>)
-        (<%= link_to "download2", download_contract_product_path(@product) %>)
+        (<%= link_to "download1 (-)", rails_blob_path(@product.contract, disposition: "attachment") %>)
+        (<%= link_to "download2 (?)", rails_storage_proxy_path(@product.contract) %>)
+        (<%= link_to "download3 (+)", download_contract_product_path(@product) %>)
       </div>
     <% end %>
 
