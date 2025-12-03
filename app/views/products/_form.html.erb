@@ -10,12 +10,23 @@
 
   <div>
     <%= form.label :description, style: "display: block" %>
-    <%= form.rich_textarea :description %>
+    <%= form.textarea :description %>
   </div>
 
   <div>
     <%= form.label :inventory_count, style: "display: block" %>
     <%= form.number_field :inventory_count %>
+  </div>
+
+  <div>
+    <%= form.label :contract, style: "display: block" %>
+    <%= form.file_field :contract %>
+    <% if @product.contract.attached? %>
+      <div>
+        Current contract: <%= @product.contract.filename %>
+        (<%= link_to "download", rails_blob_path(@product.contract, disposition: "attachment") %>)
+      </div>
+    <% end %>
   </div>
 
   <div>

@@ -1,6 +1,6 @@
 class ProductsController < ApplicationController
   before_action :authenticate_user!, except: [ :index, :show ]
-  before_action :set_product, only: [ :show, :edit, :update, :destroy ]
+  before_action :set_product, only: [ :show, :edit, :update, :destroy, :download_contract ]
 
   def index
     logger.info "current_user = #{current_user}"
@@ -28,21 +28,35 @@ class ProductsController < ApplicationController
   end
 
   def edit
-    # @product = Product.find(params[:id])
   end
 
   def update
-    # @product = Product.find(params[:id])
-    if @product.update(product_params)
-      redirect_to @product
-    else
-      render :edit, status: :unprocessable_entity
+    Product.transaction do
+      if @product.update(product_params)
+        redirect_to @product
+      else
+        render :edit, status: :unprocessable_entity
+      end
     end
   end
 
   def destroy
     @product.destroy
     redirect_to products_path
+  end
+
+  def download_contract
+    unless @product.contract.attached?
+      head :not_found and return
+    end
+    contract_blob = @product.contract.blob
+    data = contract_blob.download
+    send_data data,
+              filename: contract_blob.filename.to_s,
+              type: contract_blob.content_type,
+              disposition: "attachment"
+  rescue ActiveRecord::RecordNotFound
+    head :not_found
   end
 
   private
@@ -52,6 +66,6 @@ class ProductsController < ApplicationController
   end
 
   def product_params
-    params.expect(product: [ :name, :description, :inventory_count ])
+    params.expect(product: [ :name, :description, :inventory_count, :contract ])
   end
 end
