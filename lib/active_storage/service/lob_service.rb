@@ -14,7 +14,6 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   SEEK_END = 2
 
   def upload(key, io, checksum: nil, **options)
-    puts "OLALA"
     ActiveRecord::Base.transaction do
       conn = ActiveRecord::Base.connection.raw_connection
 
