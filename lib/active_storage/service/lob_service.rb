@@ -12,7 +12,6 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   SEEK_END = 2
 
   def upload(key, io, checksum: nil, **options)
-    loid = nil
     ActiveRecord::Base.transaction do
       row  = ActiveRecord::Base.connection.select_one("select lo_create(0) as loid")
       loid = row["loid"].to_i
@@ -27,12 +26,15 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
       end
 
       ActiveRecord::Base.connection.exec_query("select lo_close($1)", "SQL", [ fd ])
+
+      blob = ActiveStorage::Blob.find_by!(key: key)
+      blob.update_column(:metadata, blob.metadata.merge("loid" => loid))
     end
-    loid
   end
 
   def download(key)
-    loid = key.to_i
+    blob = ActiveStorage::Blob.find_by!(key: key)
+    loid = blob.metadata["loid"].to_i
     row = ActiveRecord::Base.connection.select_one("select lo_open($1, $2)", "SQL", [ loid, MODE_READ ])
     fd = row["fd"].to_i
     begin
@@ -59,13 +61,15 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   end
 
   def delete(key)
-    loid = key.to_i
+    blob = ActiveStorage::Blob.find_by!(key: key)
+    loid = blob.metadata["loid"].to_i
     ActiveRecord::Base.connection.exec_query("select lo_unlink($1)", "SQL", [ loid ])
   end
 
   def exist?(key)
-    loid = key.to_i
-    row = ActiveRecord::Base.connection.select_one("select exists(select loid from pg_largeobject where loid=$1) as e", "SQL", [ loid ])
+    blob = ActiveStorage::Blob.find_by!(key: key)
+    loid = blob.metadata["loid"].to_i
+    row = ActiveRecord::Base.connection.select_one("select exists(select loid from pg_largeobject_metadata where loid=$1) as e", "SQL", [ loid ])
     row["e"]
   end
 end

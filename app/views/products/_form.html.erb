@@ -21,6 +21,12 @@
   <div>
     <%= form.label :contract, style: "display: block" %>
     <%= form.file_field :contract %>
+    <% if @product.contract.attached? %>
+      <div>
+        Current contract: <%= @product.contract.filename %>
+        (<%= link_to "download", rails_blob_path(@product.contract, disposition: "attachment") %>)
+      </div>
+    <% end %>
   </div>
 
   <div>
