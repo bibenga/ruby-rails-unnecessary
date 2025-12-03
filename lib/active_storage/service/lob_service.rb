@@ -36,7 +36,6 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   end
 
   def download(key)
-    puts "OLALA: #{block_given?}"
     ActiveRecord::Base.transaction do
       blob = ActiveStorage::Blob.find_by!(key: key)
       loid = blob.metadata["loid"].to_i
