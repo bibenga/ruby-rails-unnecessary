@@ -29,8 +29,7 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
 
       conn.lo_close(fd)
 
-      # blob = ActiveStorage::Blob.find_by!(key: key)
-      # blob.update_column(:metadata, blob.metadata.merge("loid" => loid))
+      # we store loid in the metadata
       sql = ActiveRecord::Base.sanitize_sql_array([
         "metadata = jsonb_set(metadata::jsonb, '{loid}', to_jsonb(?))::text",
         loid
@@ -41,7 +40,8 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
 
   def download(key)
     ActiveRecord::Base.transaction do
-      loid = ActiveStorage::Blob.where(key: key).pluck(Arel.sql("(metadata::jsonb->>'loid')::bigint"))[0]
+      # retrive loid from the metadata
+      loid = ActiveStorage::Blob.where(key: key).pluck(Arel.sql("(metadata::jsonb->'loid')::bigint"))[0]
       raise StandardError if loid.nil?
 
       conn = ActiveRecord::Base.connection.raw_connection
@@ -70,13 +70,15 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
   end
 
   def delete(key)
-    loid = ActiveStorage::Blob.where(key: key).pluck(Arel.sql("(metadata::jsonb->>'loid')::bigint"))[0]
+    # retrive loid from the metadata
+    loid = ActiveStorage::Blob.where(key: key).pluck(Arel.sql("(metadata::jsonb->'loid')::bigint"))[0]
     raise StandardError if loid.nil?
     ActiveRecord::Base.connection.exec_query("select lo_unlink($1)", "SQL", [ loid ])
   end
 
   def exist?(key)
-    loid = ActiveStorage::Blob.where(key: key).pluck(Arel.sql("(metadata::jsonb->>'loid')::bigint"))[0]
+    # retrive loid from the metadata
+    loid = ActiveStorage::Blob.where(key: key).pluck(Arel.sql("(metadata::jsonb->'loid')::bigint"))[0]
     raise StandardError if loid.nil?
     row = ActiveRecord::Base.connection.select_one("select exists(select loid from pg_largeobject_metadata where loid=$1) as e", "SQL", [ loid ])
     row["e"]
