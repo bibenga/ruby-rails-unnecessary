@@ -57,10 +57,10 @@ class ProductsController < ApplicationController
     #           type: contract_blob.content_type,
     #           disposition: "attachment"
 
-    filename = contract_blob.filename.to_s
+    filename = contract_blob.filename.to_s || "file.data"
     filename = filename.gsub(/["\\]/, "_")
     filename = CGI.escape(filename)
-    headers["Content-Type"] = "application/octet-stream"
+    headers["Content-Type"] = contract_blob.content_type || "application/octet-stream"
     headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
     self.response_body = Enumerator.new do |yielder|
       contract_blob.download do |chunk|
