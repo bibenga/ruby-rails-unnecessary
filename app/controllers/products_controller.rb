@@ -50,11 +50,24 @@ class ProductsController < ApplicationController
       head :not_found and return
     end
     contract_blob = @product.contract.blob
-    data = contract_blob.download
-    send_data data,
-              filename: contract_blob.filename.to_s,
-              type: contract_blob.content_type,
-              disposition: "attachment"
+
+    # data = contract_blob.download
+    # send_data data,
+    #           filename: contract_blob.filename.to_s,
+    #           type: contract_blob.content_type,
+    #           disposition: "attachment"
+
+    filename = contract_blob.filename.to_s
+    filename = filename.gsub(/["\\]/, "_")
+    filename = CGI.escape(filename)
+    headers["Content-Type"] = "application/octet-stream"
+    headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
+    self.response_body = Enumerator.new do |yielder|
+      contract_blob.download do |chunk|
+        yielder << chunk
+      end
+    end
+
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end

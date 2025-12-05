@@ -52,7 +52,7 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
       if block_given?
         loop do
           chunk = conn.loread(fd, CHUNK_SIZE)
-          break if chunk.empty?
+          break if chunk.nil?
           yield chunk
         end
         conn.lo_close(fd)
