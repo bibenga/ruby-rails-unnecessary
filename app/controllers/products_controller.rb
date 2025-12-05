@@ -62,10 +62,8 @@ class ProductsController < ApplicationController
     filename = CGI.escape(filename)
     headers["Content-Type"] = contract_blob.content_type || "application/octet-stream"
     headers["Content-Disposition"] = "attachment; filename=\"#{filename}\""
-    self.response_body = Enumerator.new do |yielder|
-      contract_blob.download do |chunk|
-        yielder << chunk
-      end
+    self.response_body = Enumerator.new do |y|
+      contract_blob.download { |chunk| y << chunk }
     end
 
   rescue ActiveRecord::RecordNotFound
