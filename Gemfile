@@ -68,7 +68,7 @@ end
 gem "devise", "~> 4.9"
 gem "devise-jwt", "~> 0.12.1"
 
-gem "grape", "~> 2.4"
+gem "grape", "~> 3.0"
 gem "grape-entity", "~> 1.0"
 gem "grape-swagger", "~> 2.1"
 gem "grape-swagger-entity", "~> 0.7.0"
@@ -80,3 +80,5 @@ gem "graphiql-rails", group: :development
 gem "kaminari", "~> 1.2"
 
 gem "vite_rails", "~> 3.0"
+
+gem "pg", "~> 1.6"

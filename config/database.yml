@@ -16,7 +16,12 @@ default: &default
 development:
   primary:
     <<: *default
-    database: storage/development.sqlite3
+    # database: storage/development.sqlite3
+    adapter: postgresql
+    host: host.docker.internal
+    username: rds
+    password: sqlsql
+    database: rails
   cache:
     <<: *default
     database: storage/development_cache.sqlite3
