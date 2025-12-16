@@ -82,3 +82,5 @@ gem "kaminari", "~> 1.2"
 gem "vite_rails", "~> 3.0"
 
 gem "pg", "~> 1.6"
+
+gem "foreman"
