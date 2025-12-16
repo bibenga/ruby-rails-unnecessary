@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rails Admin Panel</title>
+  <title>Some Admin</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  
-  <%= stylesheet_link_tag "admin", media: "all", data: { turbo_track: "reload" } %>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="icon" href="/icon.png" type="image/png">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.png">
 
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
-
+  <%= stylesheet_link_tag "admin", media: "all", data: { turbo_track: "reload" } %>
   <%= vite_client_tag %>
 </head>
 <body>
-
   <div id="react-admin-container">
     <%= yield %>
   </div>
-  
 </body>
 </html>

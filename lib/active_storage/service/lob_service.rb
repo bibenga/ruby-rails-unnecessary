@@ -80,7 +80,10 @@ class ActiveStorage::Service::LobService < ActiveStorage::Service
     # retrive loid from the metadata
     loid = ActiveStorage::Blob.where(key: key).pluck(Arel.sql("(metadata::jsonb->'loid')::bigint"))[0]
     raise StandardError if loid.nil?
-    row = ActiveRecord::Base.connection.select_one("select exists(select loid from pg_largeobject_metadata where loid=$1) as e", "SQL", [ loid ])
+    row = ActiveRecord::Base.connection.select_one(
+      "select exists(select loid from pg_largeobject_metadata where loid=$1) as e",
+      "SQL", [ loid ]
+    )
     row["e"]
   end
 end
